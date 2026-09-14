@@ -1,0 +1,70 @@
+- id: "1"
+  title: Scaffolding
+  description: >-
+    Create apps/tui_tcp_chat/, the single root go.mod for the monorepo, the
+    app's Dockerfile, and an initial compose.yaml with the tui_tcp_chat
+    server service skeleton (not yet functional). Grounds CAP-4's structure
+    per conventions.md.
+  spec_checkpoint: false
+  done_checkpoint: true
+  invoke_dev_with: >-
+    Follow conventions.md exactly: one root go.mod (not per-app), Compose
+    build.context at repo root, app Dockerfile at apps/tui_tcp_chat/Dockerfile.
+    No server logic yet — this story is scaffolding only.
+
+- id: "2"
+  title: TCP broadcast server
+  description: >-
+    Implement the chat server: goroutine-per-connection accepting TCP
+    clients, plus a single broadcaster goroutine coordinating all
+    connections via channels, no mutex. Implements CAP-1 — 2+ clients
+    connected simultaneously, a message from one reaches all others.
+  spec_checkpoint: true
+  done_checkpoint: true
+  invoke_dev_with: >-
+    Concurrency model is fixed by SPEC.md constraints: goroutine-per-connection
+    + single broadcaster goroutine over channels, no mutex anywhere. Use
+    Go's stdlib net package directly. Should be testable with nc/telnet
+    before any TUI client exists.
+
+- id: "3"
+  title: Bubble Tea TUI client
+  description: >-
+    Build the Bubble Tea TUI client that dials the server over TCP, sends
+    locally typed text, and renders incoming messages live with no manual
+    refresh. Implements CAP-2.
+  spec_checkpoint: true
+  done_checkpoint: true
+  invoke_dev_with: >-
+    Bubble Tea only, no substitute TUI library. Client runs via
+    `docker compose run --rm tui_tcp_chat_client` per conventions.md — keep
+    that invocation in mind for how the client reads stdin/attaches a TTY,
+    even though the compose service itself lands in story 5.
+
+- id: "4"
+  title: Usernames
+  description: >-
+    Client prompts for or sets a username that tags every outgoing message;
+    server relays messages as-is; TUI displays the sender's username
+    alongside each message's text. Implements CAP-3.
+  spec_checkpoint: false
+  done_checkpoint: true
+  invoke_dev_with: >-
+    Username is a display label only, not identity/auth (non-goal already
+    fixed in SPEC.md) — no uniqueness enforcement or validation beyond
+    basic non-empty input needed.
+
+- id: "5"
+  title: Compose lifecycle finish
+  description: >-
+    Add the tui_tcp_chat_client Compose service (defined but never `up`'d,
+    only invoked via `docker compose run --rm`), and confirm
+    `docker compose up` / `docker compose up --build tui_tcp_chat` from the
+    repo root bring up the server with no manual steps outside Docker.
+    Completes CAP-4 and the v1 success signal.
+  spec_checkpoint: false
+  done_checkpoint: true
+  invoke_dev_with: >-
+    This is the final integration story: after this, the success signal
+    (2+ TUI clients exchange usernamed messages, whole thing starts via
+    `docker compose up`) should be demonstrable end to end.
