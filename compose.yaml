@@ -1,0 +1,6 @@
+services:
+  tui_tcp_chat:
+    build:
+      context: .
+      dockerfile: apps/tui_tcp_chat/Dockerfile
+    image: ai-training-go/tui_tcp_chat
